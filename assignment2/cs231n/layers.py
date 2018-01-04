@@ -657,6 +657,7 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     """
     out, cache = None, None
 
+    
     ###########################################################################
     # TODO: Implement the forward pass for spatial batch normalization.       #
     #                                                                         #
@@ -664,12 +665,20 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     # version of batch normalization defined above. Your implementation should#
     # be very short; ours is less than five lines.                            #
     ###########################################################################
-    pass
+    # Get dimensions
+    N, C, H, W = x.shape
+
+    # Swap axes
+    x = np.swapaxes(x,0,1)
+
+    # Batchnorm through each channel separately
+    out, cache = batchnorm_forward(x.reshape(C,N*H*W).T, gamma, beta, bn_param)
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
 
-    return out, cache
+    return out.T.reshape(C,N,H,W).swapaxes(0,1), cache
 
 
 def spatial_batchnorm_backward(dout, cache):
@@ -694,12 +703,16 @@ def spatial_batchnorm_backward(dout, cache):
     # version of batch normalization defined above. Your implementation should#
     # be very short; ours is less than five lines.                            #
     ###########################################################################
-    pass
+    N, C, H, W = dout.shape
+
+    # Backpropagate through each channel
+    dx, dgamma, dbeta = batchnorm_backward(dout.swapaxes(0,1).reshape(C,-1).T, cache)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
 
-    return dx, dgamma, dbeta
+    return dx.T.reshape(C,N,H,W).swapaxes(0,1), dgamma, dbeta
+
 
 
 def svm_loss(x, y):
